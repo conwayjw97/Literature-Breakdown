@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+
+{% extends 'lit/base.html' %}
+{% load staticfiles %}
+
+{% block title_block %}
+	FAQ
+{% endblock %}
+
+
+{% block body_block %}
+	<div class="row">
+	<div class="col-sm-9 offset-sm-3 col-md-10 offset-md-2 main">
+
+		<nav class="col-sm-3 col-md-2 hidden-xs-down bg-faded sidebar">
+		  <ul class="nav nav-pills flex-column">
+			<li class="nav-item">
+			<h2 style="text-align:center">Browse Site</h2>
+			</li>
+				<li class="nav-item">
+				  <a class="nav-link" href="{% url 'index' %}">Home <span class="sr-only">(current)</span></a>
+				</li>
+				<li class="nav-item">
+				  <a class="nav-link active" href="{% url 'faq' %}">FAQ</a>
+				</li>
+				<li class="nav-item">
+				  <a class="nav-link" href="{% url 'new' %}">New</a>
+				</li>
+				<li class="nav-item">
+				  <a class="nav-link" href="{% url 'trending' %}">Trending</a>
+				</li>
+			<li class="nav-item">
+			<h2 style="text-align:center">Browse Categories</h2>
+			</li>
+
+			{% if categories %}
+			  {% for category in categories %}
+					<li class="nav-item">
+					  <a class="nav-link" href="{% url 'show_category' category.slug %}">{{ category.name }}</a>
+					</li>
+			   {% endfor %}
+			 {% else %}
+				  <strong>There are no categories to show.</strong>
+			{% endif %}
+			 </ul>
+		</nav>
+
+		<h1 class="display-3">What is this site?</h1>
+		<p>The main functionality of Literature Breakdown is to provide a hub for book lovers in which they can
+			leave analyses on any piece of literature ever written.</p>
+		<h1 class="display-3">How do I write an analysis?</h1>
+		<p>Simply sign up and you'll be able to write your own analyses immediately.</p>
+		<h1 class="display-3">How do I comment on an article?</h1>
+        <p>Scroll to the bottom of the article and there will be a text box to enter a comment.</p>
+        <h1 class="display-3">Can I choose to favourite an article?</h1>
+        <p>Yes!, just simply click the "Add to favourites" button on the article</p>
+
+	</div>
+	</div>
+{% endblock %}
+
+

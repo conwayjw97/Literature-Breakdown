@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+
+{% extends 'lit/base.html' %}
+{% load staticfiles %}
+
+{% block css_block %}
+	<!-- Bootstrap style edits -->
+    <link href="{% static 'css/lit.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block title_block %}
+	{{ article.title }}
+{% endblock %}
+
+
+{% block body_block %}
+	<div class="row" style="padding-top:30px;">
+		<div class="col-md-3">
+			{% if article.img %}
+			<img src="{{ MEDIA_URL }}{{ article.img }}"
+				 width="300"
+				 height="400"
+				 alt={{ article.title }} 
+				 style="max-width: 100%;
+						height: auto;
+						width: auto\9;"/>
+			{% else %}
+			<img src="{% static 'dummy_book.png' %}"
+				 width="300"
+				 height="400"
+				 alt={{ article.title }} 
+				 style="max-width: 100%;
+						height: auto;
+						width: auto\9;"/>
+			{% endif %}
+		</div>
+		<div class="col-md-9">
+			<div class="row">
+				<div class="col-md-10"><h1 class="display-3">{{ article.title }}</h1></div>
+			</div>
+			<div class="row" style="padding-top:30px;">
+				<div class="col-md-4"><h4>Submitted: {{ article.date_published }}</h4></div>
+				<div class="col-md-4"><h4>Rating: {{ article.rating }}</h4></div>
+				<div class="col-md-4"><h4>Author: <a href="{% url 'profile' article.author %}">{{ article.author }}</a></h4></div>
+			</div>
+			<div class="row" style="padding-top:30px;">
+				{% if article.book %}
+				<div class="col-md-4"><h4>Book Title: {{ article.book }}</h4></div>
+				{% endif %}
+				{% if article.book_author %}
+				<div class="col-md-4"><h4>Book Author: {{ article.book_author }}</h4></div>
+				{% endif %}
+				{% if article.book_published %}
+				<div class="col-md-4"><h4>Book Published: {{ article.book_published }}</h4></div>
+				{% endif %}
+			</div>
+			<div class="row" style="padding-top:30px;"> 
+				<div class="col-md-4"><h4>Category: {{ article.category }}</h4></div>
+				{% if user.is_authenticated %}
+					{% if favourited %}
+					<div class="col-md-4"><h4><a href="{% url 'remove_favourite' user.username article.slug %}">Remove from Favourites</a></h4></div>
+					{% else %}
+					<div class="col-md-4"><h4><a href="{% url 'add_favourite' user.username article.slug %}">Add to Favourites</a></h4></div>
+					{% endif %}
+				{% endif %}
+			</div>
+		</div>
+	</div>
+	
+	{% if user.is_authenticated and userprofile == article.author %}
+	<div class="col-md-12" style="padding-top:30px;">
+		<h1 style="text-align:center">Analysis Author Actions</h1>
+		<h4 style="text-align: center;">
+			<a href="{% url 'edit_article' user.username article.slug %}">Edit Analysis</a> - 
+			<span onclick="return confirm('Are you sure?')">
+				<a href="{% url 'remove_article' user.username article.slug %}">Delete Analysis</a>
+			</span> 
+		</h4>
+	</div>
+	{% endif %}
+	
+	<div style="padding-top:30px;">
+		<h1 style="text-align:center">General Analysis</h1>
+		<p style="text-align:center">{{ article.analysis}}</p>
+	</div>
+	
+	{% if snippets %}
+	<div style="padding-top:30px;">
+		<h1 style="text-align:center">Snippets</h1>
+		{% for snippet in snippets %}
+		<div class="row" style="padding-top:10px;">
+			<div class="col">
+				<h4 style="text-align:center">{{ snippet.snippet_title }} on page: {{ snippet.page }}</h4>
+				{% if user.is_authenticated %}{% if userprofile == article.author %}
+				<h4 style="text-align:center">
+					<a href="{% url 'edit_snippet' article.slug snippet.id %}">Edit</a>
+					/ 
+					<span onclick="return confirm('Are you sure?')">
+						<a href="{% url 'remove_snippet' article.slug snippet.id %}">Delete</a>
+					</span> 
+				</h4>
+				{% endif %}{% endif %}
+			</div>
+			<div class="row">
+				<div class="col-md-6">
+					<h4 style="text-align:center;padding-top:10px;">Passage</h4>
+					<p style="text-align:center;">{{ snippet.passage }}</p>
+				</div>
+				<div class="col-md-6">
+					<h4 style="text-align:center;padding-top:10px;">Analysis</h4>
+					<p style="text-align:center;">{{ snippet.analysis }}</p>
+				</div>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	{% endif %}
+	
+	{% if comments %}
+	<div style="padding-top:30px;">
+		<h1 style="text-align:center">Comments</h1>
+		{% for comment in comments %}
+		<div class="row" style="padding-top:10px; border-bottom: 1px solid #eee;">
+			<div class="col-md-3">
+				<h4 style="text-align:center">From: {{ comment.user }}</h4>
+				<h4 style="text-align:center; padding-top:10px;">Rating: {{ comment.rating }}</h4>
+				{% if userprofile == comment.user %}
+				<span onclick="return confirm('Are you sure?')">
+					<h4 style="text-align:center; padding-top:10px;"><a href="{% url 'remove_comment' comment.id article.slug %}">Delete</a></h4>
+				</span>
+				{% endif %}
+			</div>
+			<div class="col-md-8">
+				<p style="text-align:left;">{{ comment.user_comment }}</p>
+			</div>
+		</div>
+		{% endfor %}
+	</div>
+	{% endif %}
+	
+	{% if user.is_authenticated and can_comment %}
+	<div style="padding-top:30px;">
+		<form id="comment_form" method="post" action="{% url 'show_article' article.slug %}"
+			enctype="multipart/form-data">
+
+		<!-- Display the form -->
+		{% for field in comment_form %}
+		<div class="fieldWrapper">
+			{{ field.errors }}
+			<div style="text-align: center">{{ field.label_tag }}</div>
+			{{ field }}
+			{% if field.help_text %}
+			<p class="help">{{ field.help_text|safe }}</p>
+			{% endif %}
+		</div>
+		{% endfor %}
+		
+		{% csrf_token %}
+		
+
+		<!-- Provide a button to click to submit the form. -->
+		<input type="submit" name="submit" value="Post" id="id_button" />
+		</form>
+	</div>
+	{% endif %}
+	
+{% endblock %}
+
+
